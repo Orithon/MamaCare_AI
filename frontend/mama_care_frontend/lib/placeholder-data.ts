@@ -2,16 +2,7 @@
  * lib/placeholder-data.ts
  *
  * Central home for ALL mock/stub data and placeholder API functions.
- * Every function here simulates what a real backend API call will return.
- *
- * HOW TO USE:
- *   Import the function you need, use it exactly like a real async API call.
- *   When the backend is ready, replace the function body with a real fetch()
- *   call — the return type stays the same so nothing else needs to change.
- *
- * NAMING CONVENTION:
- *   All placeholder functions are named getXxx() and are async.
- *   They are marked with a TODO comment showing which backend endpoint replaces them.
+ * Now wired up to the real backend API.
  */
 
 import { auth } from "./firebase";
@@ -19,22 +10,21 @@ import { FirebaseError } from "firebase/app";
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  deleteUser
 } from "firebase/auth";
 
 /* ── TYPES ─────────────────────────────────────────────────────────────────── */
 
-/** Statistics shown in the landing page Stats section */
 export interface PlatformStats {
-  maternalDeathStat: string;  // e.g. "~20%"
-  maternalDeathLabel: string; // explanation of the stat
-  languagesCount: string;     // e.g. "4"
-  languagesLabel: string;     // explanation
-  analysisType: string;       // e.g. "Real-time"
-  analysisLabel: string;      // explanation
+  maternalDeathStat: string;
+  maternalDeathLabel: string;
+  languagesCount: string;
+  languagesLabel: string;
+  analysisType: string;
+  analysisLabel: string;
 }
 
-/** A single patient summary row for the provider dashboard mock */
 export interface MockPatient {
   name: string;
   gestationalWeek: string;
@@ -42,12 +32,6 @@ export interface MockPatient {
   lastAssessment: string;
 }
 
-/* ── LANDING PAGE ───────────────────────────────────────────────────────────── */
-
-/**
- * Returns platform impact statistics for the landing page Stats section.
- * TODO: Replace with GET /api/stats once the backend endpoint is live.
- */
 export async function getPlatformStats(): Promise<PlatformStats> {
   return {
     maternalDeathStat: "~20%",
@@ -59,11 +43,6 @@ export async function getPlatformStats(): Promise<PlatformStats> {
   };
 }
 
-/**
- * Returns a small list of mock patients for the provider dashboard preview
- * shown on the landing page's "For Healthcare Providers" section.
- * TODO: Replace with GET /provider/patients once the backend is ready.
- */
 export function getMockPatients(): MockPatient[] {
   return [
     { name: "Amina Bello",      gestationalWeek: "32 wks", riskLevel: "Critical", lastAssessment: "2h ago" },
@@ -72,11 +51,6 @@ export function getMockPatients(): MockPatient[] {
   ];
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   ONBOARDING — placeholder functions
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/** Standard list of all 36 Nigerian States + FCT for dropdowns */
 export const NIGERIAN_STATES = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
   "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT - Abuja", "Gombe",
@@ -85,43 +59,65 @@ export const NIGERIAN_STATES = [
   "Taraba", "Yobe", "Zamfara"
 ];
 
-/** Full data collected across all 3 steps of the onboarding wizard */
 export interface OnboardingData {
-  // Step 1
   dob: string;
   state: string;
   lga: string;
   phone: string;
-  // Step 2
   gestationalWeek: number;
-  edd: string; // Estimated Due Date
+  edd: string;
   prevPregnancies: number;
   prevLiveBirths: number;
-  // Step 3
   conditions: string[];
   allergies: string;
-  medications: string;
+  medications: string; // Not in backend model, will ignore
   providerCode: string;
 }
 
-/**
- * Placeholder: Saves the patient's onboarding profile.
- * TODO: Replace with POST /user/onboarding (requires Bearer token from Firebase Auth)
- */
-export async function submitOnboarding(data: OnboardingData): Promise<{ success: boolean; error?: string }> {
-  // Simulate network delay
-  await new Promise((r) => setTimeout(r, 1200));
-
-  // Simulate success
-  console.log("Mock saved onboarding data:", data);
-  return { success: true };
+export async function submitOnboarding(data: OnboardingData): Promise<{ success: boolean; error?: string; providerCodeInvalid?: boolean }> {
+  try {
+    const user = auth.currentUser;
+    if (!user) return { success: false, error: "Not authenticated" };
+    
+    const token = await user.getIdToken();
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    
+    const response = await fetch(`${apiUrl}/api/v1/auth/onboarding`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        dob: data.dob,
+        state_of_residence: data.state,
+        lga: data.lga,
+        estimated_due_date: data.edd,
+        gestational_age_weeks: data.gestationalWeek,
+        previous_pregnancies: data.prevPregnancies,
+        previous_live_births: data.prevLiveBirths,
+        pre_existing_conditions: data.conditions,
+        allergies: data.allergies || undefined,
+        provider_code: data.providerCode || undefined
+      })
+    });
+    
+    const resData = await response.json().catch(() => ({}));
+    
+    if (!response.ok) {
+      return { success: false, error: resData.detail || "Failed to submit onboarding profile" };
+    }
+    
+    return { 
+      success: true, 
+      providerCodeInvalid: resData.provider_code_invalid 
+    };
+  } catch (error) {
+    console.error("Onboarding error:", error);
+    return { success: false, error: "Network error occurred during onboarding." };
+  }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   AUTH — placeholder functions
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/** Supported languages a user can pick as their preferred language */
 export const SUPPORTED_LANGUAGES = [
   { code: "en", label: "English" },
   { code: "yo", label: "Yoruba" },
@@ -131,49 +127,60 @@ export const SUPPORTED_LANGUAGES = [
 
 export type LanguageCode = (typeof SUPPORTED_LANGUAGES)[number]["code"];
 
-/** User role — determines which form fields are shown and which routes they access */
 export type UserRole = "patient" | "provider";
 
-/** Payload sent to the register endpoint */
 export interface RegisterPayload {
   role: UserRole;
   fullName: string;
   email: string;
   password: string;
-  preferredLanguage: LanguageCode; // patients only
-  licenceNumber: string;           // providers only
-  facilityName: string;            // providers only
+  preferredLanguage: LanguageCode;
+  licenceNumber: string;
+  facilityName: string;
 }
 
-/** Standard response shape for auth actions */
 export interface AuthResult {
   success: boolean;
-  /** Human-readable error shown to the user on failure */
   error?: string;
-  /** On success: where to redirect the user next */
   redirectTo?: string;
-  /** Firebase JWT to send to backend for verification */
   token?: string;
 }
 
-/**
- * Registers a new user (patient or provider) via Firebase Auth.
- * TODO: Add POST /auth/register call here to save the profile data (role, fullName, etc.)
- *
- * @param payload - Form data collected from the registration form
- * @returns AuthResult with success flag, redirect path, and JWT
- */
 export async function registerUser(payload: RegisterPayload): Promise<AuthResult> {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, payload.email, payload.password);
-    const token = await userCredential.user.getIdToken();
+    const user = userCredential.user;
+    const token = await user.getIdToken();
     
-    // In a full app, we would also save the additional payload data (fullName, role, etc.) 
-    // to our custom backend using this token.
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    
+    const response = await fetch(`${apiUrl}/api/v1/auth/register`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email: payload.email,
+        full_name: payload.fullName,
+        role: payload.role,
+        preferred_language: payload.role === "patient" ? payload.preferredLanguage : undefined,
+        clinic_name: payload.role === "provider" ? payload.facilityName : undefined,
+        license_number: payload.role === "provider" ? payload.licenceNumber : undefined
+      })
+    });
+
+    if (!response.ok) {
+      // Rollback Firebase user creation if backend fails
+      await deleteUser(user);
+      const errData = await response.json().catch(() => ({}));
+      return { success: false, error: errData.detail || "Failed to create profile on server. Please try again." };
+    }
     
     const redirectTo = payload.role === "patient" ? "/onboarding" : "/provider";
     return { success: true, redirectTo, token };
-  } catch (error: unknown) {
+    
+  } catch (error: any) {
     let errorMessage = "An error occurred during registration. Please try again.";
     
     if (error instanceof FirebaseError) {
@@ -190,29 +197,47 @@ export async function registerUser(payload: RegisterPayload): Promise<AuthResult
   }
 }
 
-/**
- * Signs an existing user in with email + password via Firebase Auth.
- *
- * @param email    - User's registered email
- * @param password - User's password
- * @returns AuthResult with success flag, redirect path, and JWT
- */
 export async function loginUser(email: string, password: string): Promise<AuthResult> {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const token = await userCredential.user.getIdToken();
     
-    // In reality the role would come from the backend profile.
-    // For now we redirect everyone to the patient dashboard.
-    return { success: true, redirectTo: "/dashboard", token };
-  } catch (error: unknown) {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const response = await fetch(`${apiUrl}/api/v1/auth/me`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      return { success: false, error: "Could not fetch user profile from server." };
+    }
+
+    const data = await response.json();
+    let redirectTo = "/dashboard";
+
+    if (data.role === "provider") {
+      redirectTo = "/provider";
+    } else if (data.role === "patient") {
+      if (!data.profile?.onboarded) {
+        redirectTo = "/onboarding";
+      } else {
+        redirectTo = "/dashboard";
+      }
+    }
+    
+    return { success: true, redirectTo, token };
+    
+  } catch (error: any) {
     let errorMessage = "Incorrect email or password. Please try again.";
     
     if (error instanceof FirebaseError) {
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
         errorMessage = "Incorrect email or password. Please try again.";
       } else if (error.code === 'auth/too-many-requests') {
-        errorMessage = "Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.";
+        errorMessage = "Access to this account has been temporarily disabled due to many failed login attempts.";
       }
     }
     
@@ -220,19 +245,11 @@ export async function loginUser(email: string, password: string): Promise<AuthRe
   }
 }
 
-/**
- * Sends a password reset email via Firebase Auth.
- *
- * @param email - The email address to send the reset link to
- * @returns AuthResult — always succeeds in this implementation (even for unknown emails,
- *          which is the correct security behaviour — don't reveal whether an email exists)
- */
 export async function sendPasswordReset(email: string): Promise<AuthResult> {
   try {
     await sendPasswordResetEmail(auth, email);
     return { success: true };
   } catch (error: unknown) {
-    // Intentionally returns success even for unknown emails (standard security practice)
     return { success: true };
   }
 }

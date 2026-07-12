@@ -33,6 +33,7 @@ export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [providerCodeInvalid, setProviderCodeInvalid] = useState(false);
 
   // Generic updater function passed to all steps
   const updateData = (fields: Partial<OnboardingData>) => {
@@ -54,10 +55,13 @@ export default function OnboardingPage() {
     const result = await submitOnboarding(data);
     
     if (result.success) {
+      if (result.providerCodeInvalid) {
+        setProviderCodeInvalid(true);
+      }
       setSuccess(true);
       setTimeout(() => {
         router.push("/dashboard");
-      }, 1500);
+      }, result.providerCodeInvalid ? 3500 : 1500);
     } else {
       setError(result.error ?? "Failed to save profile. Please try again.");
       setIsSubmitting(false);
@@ -107,6 +111,17 @@ export default function OnboardingPage() {
             <h2 style={{ fontSize: "1.75rem", fontWeight: 700, color: "#1A1A1A", marginBottom: "0.75rem" }}>
               Profile Complete!
             </h2>
+            {providerCodeInvalid ? (
+               <div style={{ 
+                  backgroundColor: "#FFFBEB", border: "1px solid #FEF3C7", 
+                  padding: "1rem", borderRadius: "0.5rem", color: "#92400E",
+                  marginBottom: "1.5rem", fontSize: "0.9rem", textAlign: "left",
+                  display: "flex", gap: "0.5rem"
+               }}>
+                 <AlertTriangle size={20} style={{ flexShrink: 0 }} />
+                 <span>Profile saved successfully, but the provider code you entered was incorrect. You can link your provider later in your settings.</span>
+               </div>
+            ) : null}
             <p style={{ color: "#6B7280", marginBottom: "1.5rem" }}>
               Welcome to MamaCare AI. Taking you to your dashboard...
             </p>
