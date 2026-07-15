@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { MOCK_PROVIDER_DATA_FILLED, MOCK_PROVIDER_DATA_EMPTY, RiskLevel } from "@/lib/provider-data";
-import { AlertCircle, ChevronRight, Users, Code2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ProviderDashboardData, getProviderDashboard, RiskLevel } from "@/lib/provider-data";
+import PaginatedReportsTable from "@/components/provider/PaginatedReportsTable";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { AlertCircle, ChevronRight, Users, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { format, formatDistanceToNow } from "date-fns";
+import { useRouter } from "next/navigation";
 
 const RISK_STYLES: Record<RiskLevel, { bg: string; text: string; border: string }> = {
   Low: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200" },
@@ -14,32 +18,62 @@ const RISK_STYLES: Record<RiskLevel, { bg: string; text: string; border: string 
 };
 
 export default function PatientsPage() {
-  const [isEmptyState, setIsEmptyState] = useState(false);
-  const data = isEmptyState ? MOCK_PROVIDER_DATA_EMPTY : MOCK_PROVIDER_DATA_FILLED;
+  const [data, setData] = useState<ProviderDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-  const riskWeight = { Critical: 4, High: 3, Moderate: 2, Low: 1 };
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const token = await user.getIdToken();
+          const dashboardData = await getProviderDashboard(token);
+          setData(dashboardData);
+        } catch (err) {
+          console.error(err);
+          setError("Failed to load patient data.");
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        router.push("/login");
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+        <Loader2 className="w-8 h-8 animate-spin mb-4 text-primary" />
+        <p>Loading your patients...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100">
+        {error}
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  const riskWeight = { Critical: 4, High: 3, Moderate: 2, Low: 1 } as Record<string, number>;
   const sortedPatients = [...data.patients].sort((a, b) => {
-    if (riskWeight[a.lastRiskLevel] !== riskWeight[b.lastRiskLevel]) {
-      return riskWeight[b.lastRiskLevel] - riskWeight[a.lastRiskLevel];
+    const weightA = riskWeight[a.lastRiskLevel] || 1;
+    const weightB = riskWeight[b.lastRiskLevel] || 1;
+    if (weightA !== weightB) {
+      return weightB - weightA;
     }
     return new Date(b.lastAssessmentDate).getTime() - new Date(a.lastAssessmentDate).getTime();
   });
 
   return (
     <div className="pb-12 space-y-6">
-      {/* Dev Toggle Button - Only for demonstration purposes */}
-      <div className="bg-gray-800 text-white p-3 rounded-lg flex items-center justify-between mb-4 shadow-md relative z-20">
-        <div className="flex items-center gap-2">
-          <Code2 className="w-5 h-5 text-gray-400" />
-          <span className="text-sm font-medium">Dev Toggle:</span>
-        </div>
-        <button
-          onClick={() => setIsEmptyState(!isEmptyState)}
-          className="bg-white/10 hover:bg-white/20 px-4 py-1.5 rounded-md text-sm font-medium transition-colors border border-white/20"
-        >
-          Switch to {isEmptyState ? "Filled State" : "Empty State"}
-        </button>
-      </div>
 
       <div>
         <h1 className="text-2xl font-bold text-gray-900">All Patients</h1>
@@ -73,7 +107,7 @@ export default function PatientsPage() {
                   <h3 className="font-semibold text-gray-900">{patient.fullName}</h3>
                   <p className="text-sm text-gray-500">Week {patient.gestationalWeek}</p>
                 </div>
-                <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${RISK_STYLES[patient.lastRiskLevel].bg} ${RISK_STYLES[patient.lastRiskLevel].text} ${RISK_STYLES[patient.lastRiskLevel].border}`}>
+                <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${(RISK_STYLES[patient.lastRiskLevel as RiskLevel] || RISK_STYLES["Low"]).bg} ${(RISK_STYLES[patient.lastRiskLevel as RiskLevel] || RISK_STYLES["Low"]).text} ${(RISK_STYLES[patient.lastRiskLevel as RiskLevel] || RISK_STYLES["Low"]).border}`}>
                   {patient.lastRiskLevel}
                 </span>
               </div>
@@ -120,7 +154,7 @@ export default function PatientsPage() {
                   </td>
                   <td className="px-6 py-4 text-gray-700">Week {patient.gestationalWeek}</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${RISK_STYLES[patient.lastRiskLevel].bg} ${RISK_STYLES[patient.lastRiskLevel].text} ${RISK_STYLES[patient.lastRiskLevel].border}`}>
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${(RISK_STYLES[patient.lastRiskLevel as RiskLevel] || RISK_STYLES["Low"]).bg} ${(RISK_STYLES[patient.lastRiskLevel as RiskLevel] || RISK_STYLES["Low"]).text} ${(RISK_STYLES[patient.lastRiskLevel as RiskLevel] || RISK_STYLES["Low"]).border}`}>
                       {patient.lastRiskLevel === "Critical" && <AlertCircle className="w-3 h-3 mr-1" />}
                       {patient.lastRiskLevel}
                     </span>
@@ -160,6 +194,8 @@ export default function PatientsPage() {
         </>
         )}
       </div>
+
+      {data.patients.length > 0 && <PaginatedReportsTable />}
     </div>
   );
 }

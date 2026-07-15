@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import {
   LayoutDashboard,
   Activity,
   FileText,
   Mic,
   LogOut,
+  Settings,
 } from "lucide-react";
 
 /**
@@ -41,6 +44,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Assessment", href: "/dashboard/assessment", icon: Activity },
   { label: "Reports", href: "/dashboard/reports", icon: FileText },
   { label: "Voice", href: "/dashboard/voice", icon: Mic },
+  { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 /**
@@ -67,7 +71,17 @@ function isActive(pathname: string, href: string): boolean {
  */
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobile, setIsMobile] = useState(true);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      router.push("/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -244,9 +258,7 @@ export default function Sidebar() {
       >
         <button
           type="button"
-          onClick={() => {
-            // TODO: integrate with auth sign-out logic
-          }}
+          onClick={handleSignOut}
           style={{
             display: "flex",
             alignItems: "center",

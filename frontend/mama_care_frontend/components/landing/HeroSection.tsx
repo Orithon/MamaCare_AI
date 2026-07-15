@@ -223,7 +223,7 @@ export default function HeroSection() {
 
         {/* CTA buttons — stacked on mobile, side-by-side on tablet+ */}
         <div className="flex-cta animate-fade-in-up delay-300" style={{ marginBottom: "2rem" }}>
-          <Link href="/auth/register" id="hero-get-started" style={{
+          <Link href="/register" id="hero-get-started" style={{
             display: "inline-flex", alignItems: "center",
             justifyContent: "center", gap: "0.5rem",
             backgroundColor: "#ffffff", color: "#C0392B",
@@ -234,7 +234,7 @@ export default function HeroSection() {
           }}>
             Get Started — It&apos;s Free <ArrowIcon />
           </Link>
-          <Link href="/auth/register?role=provider" id="hero-provider" style={{
+          <Link href="/register?role=provider" id="hero-provider" style={{
             display: "inline-flex", alignItems: "center",
             justifyContent: "center", gap: "0.5rem",
             backgroundColor: "transparent", color: "#ffffff",

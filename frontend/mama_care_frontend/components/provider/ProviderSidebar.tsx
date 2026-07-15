@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { Users, Activity, LogOut, LayoutDashboard } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -14,7 +16,17 @@ import { useState, useEffect } from "react";
 
 export default function ProviderSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobile, setIsMobile] = useState(true); // Default to mobile for SSR safety
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      router.push("/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -140,15 +152,20 @@ export default function ProviderSidebar() {
       </nav>
 
       <div style={{ padding: "1.5rem" }}>
-        <Link
-          href="/"
+        <button
+          onClick={handleSignOut}
           style={{
             display: "flex",
             alignItems: "center",
             gap: "0.75rem",
             padding: "0.75rem 1rem",
             color: "#6B7280",
-            textDecoration: "none",
+            backgroundColor: "transparent",
+            border: "none",
+            width: "100%",
+            fontFamily: "inherit",
+            fontSize: "1rem",
+            cursor: "pointer",
             fontWeight: 500,
             borderRadius: "0.5rem",
             transition: "all 0.2s ease",
@@ -158,7 +175,7 @@ export default function ProviderSidebar() {
         >
           <LogOut size={20} />
           Sign Out
-        </Link>
+        </button>
       </div>
     </aside>
   );

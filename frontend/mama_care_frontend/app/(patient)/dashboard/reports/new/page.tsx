@@ -235,7 +235,7 @@ export default function NewReportPage() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "#F9FAFB", padding: "1rem", borderRadius: "0.75rem", border: "1px solid #E5E7EB" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", overflow: "hidden" }}>
                   <FileText size={24} color="#C0392B" style={{ flexShrink: 0 }} />
-                  <span style={{ fontSize: "0.9375rem", fontWeight: 500, color: "#1A1A1A", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <span style={{ fontSize: "0.9375rem", fontWeight: 500, color: "#1A1A1A", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", wordBreak: "break-all" }}>
                     {file.name}
                   </span>
                 </div>

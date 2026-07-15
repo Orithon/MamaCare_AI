@@ -50,7 +50,7 @@ export default function CTASection() {
         {/* CTA buttons — stacked on mobile, side-by-side from 480px */}
         <div className="flex-cta">
           {/* Primary CTA — register */}
-          <Link href="/auth/register" id="cta-register" style={{
+          <Link href="/register" id="cta-register" style={{
             display: "inline-flex", alignItems: "center",
             justifyContent: "center", gap: "0.5rem",
             backgroundColor: "#ffffff", color: "#C0392B",
@@ -62,7 +62,7 @@ export default function CTASection() {
           </Link>
 
           {/* Secondary CTA — sign in */}
-          <Link href="/auth/login" id="cta-login" style={{
+          <Link href="/login" id="cta-login" style={{
             display: "inline-flex", alignItems: "center",
             justifyContent: "center", gap: "0.5rem",
             backgroundColor: "transparent", color: "rgba(255,255,255,0.88)",

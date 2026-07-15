@@ -126,7 +126,7 @@ function TimelineEntry({
       {/* ── Content column ─────────────────────────────────────────── */}
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
         {/* Header row: Date and Risk Pill */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "0.5rem" }}>
           <span
             style={{
               fontSize: "0.8125rem",
@@ -183,6 +183,7 @@ function TimelineEntry({
  */
 export default function RecentPredictions({
   predictions,
+  hideViewAll = false,
 }: RecentPredictionsProps) {
   const visible = predictions.slice(0, MAX_ENTRIES);
 
@@ -208,17 +209,19 @@ export default function RecentPredictions({
           Recent Health Checks
         </h2>
 
-        <Link
-          href="/dashboard/assessment"
-          style={{
-            fontSize: "0.875rem",
-            fontWeight: 600,
-            color: "#C0392B",
-            textDecoration: "none",
-          }}
-        >
-          View All →
-        </Link>
+        {!hideViewAll && (
+          <Link
+            href="/dashboard/assessment"
+            style={{
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              color: "#C0392B",
+              textDecoration: "none",
+            }}
+          >
+            View All &rarr;
+          </Link>
+        )}
       </div>
 
       {/* ── Content ────────────────────────────────────────────────── */}

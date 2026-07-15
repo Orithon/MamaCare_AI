@@ -7,6 +7,108 @@ from models.provider import ProviderNoteRequest
 
 router = APIRouter(prefix="/api/v1/provider", tags=["Healthcare Provider"])
 
+@router.get("/dashboard")
+async def get_provider_dashboard(
+    current_user: dict = Depends(get_current_provider)
+):
+    """
+    Unified dashboard data for the provider.
+    Returns provider details, aggregated stats, and a list of assigned patients.
+    """
+    db = get_db()
+    provider_uid = current_user["uid"]
+    
+    # 1. Provider Info
+    user = await db.users.find_one({"firebase_uid": provider_uid})
+    provider_name = user.get("full_name", "Unknown Provider") if user else "Unknown Provider"
+    
+    provider_profile = await db.provider_profiles.find_one({"user_id": provider_uid})
+    provider_code = provider_profile.get("provider_code", "UNKNOWN") if provider_profile else "UNKNOWN"
+    
+    facility_name = provider_profile.get("clinic_name", "MamaCare Health") if provider_profile else "MamaCare Health"
+
+    # 2. Get all assigned patients
+    cursor = db.patient_profiles.find({"assigned_provider_id": provider_uid})
+    patients = []
+    
+    now_utc = datetime.now(timezone.utc)
+    recent_assessments_count = 0
+    
+    async for profile in cursor:
+        patient_uid = profile["user_id"]
+
+        # Get base user info
+        p_user = await db.users.find_one(
+            {"firebase_uid": patient_uid},
+            {"_id": 0, "full_name": 1}
+        )
+        if not p_user:
+            continue
+
+        # Get latest prediction
+        latest_pred = await db.predictions.find_one(
+            {"patient_id": patient_uid},
+            {"_id": 0, "risk_level": 1, "created_at": 1, "identified_risks": 1},
+            sort=[("created_at", -1)]
+        )
+
+        last_assessment_date = latest_pred.get("created_at") if latest_pred else None
+        
+        # Check if assessment is within last 7 days
+        if last_assessment_date:
+            try:
+                # Handle isoformat safely
+                assessment_dt = datetime.fromisoformat(last_assessment_date.replace("Z", "+00:00"))
+                if assessment_dt.tzinfo is None:
+                    assessment_dt = assessment_dt.replace(tzinfo=timezone.utc)
+                delta = now_utc - assessment_dt
+                if delta.days <= 7:
+                    recent_assessments_count += 1
+            except ValueError:
+                pass
+
+        # Calculate days until due
+        edd = profile.get("estimated_due_date", "")
+        days_until_due = 0
+        if edd:
+            try:
+                edd_date = datetime.fromisoformat(edd.replace("Z", "+00:00")).replace(tzinfo=timezone.utc)
+                delta = edd_date - now_utc
+                days_until_due = max(0, delta.days)
+            except ValueError:
+                pass
+
+        raw_risk = latest_pred.get("risk_level", "Low") if latest_pred else "Low"
+        normalized_risk = raw_risk.capitalize() if isinstance(raw_risk, str) else "Low"
+
+        patients.append({
+            "id": patient_uid,
+            "fullName": p_user.get("full_name", "Unknown"),
+            "gestationalWeek": profile.get("gestational_age_weeks", 0),
+            "lastAssessmentDate": last_assessment_date or "",
+            "lastRiskLevel": normalized_risk,
+            "conditionsFlagged": latest_pred.get("identified_risks", []) if latest_pred else [],
+            "daysUntilDue": days_until_due
+        })
+
+    # Total Patients
+    total_patients = len(patients)
+
+    # Calculate Critical/High alerts natively from the assembled list (redundancy check)
+    # The frontend also calculates this natively, but returning it is good for future
+    high_risk_alerts = sum(1 for p in patients if p["lastRiskLevel"] in ["HIGH", "CRITICAL", "High", "Critical"])
+
+    return {
+        "providerName": provider_name,
+        "providerCode": provider_code,
+        "facilityName": facility_name,
+        "stats": {
+            "totalPatients": total_patients,
+            "highRiskAlerts": high_risk_alerts,
+            "recentAssessments": recent_assessments_count,
+        },
+        "patients": patients
+    }
 
 @router.get("/patients")
 async def get_my_patients(
@@ -112,7 +214,7 @@ async def get_patient_detail(
     # All predictions
     pred_cursor = db.predictions.find(
         {"patient_id": patient_uid},
-        {"gemini_raw_response": 0, "_id": 1, "risk_level": 1, "identified_risks": 1, "recommendations": 1, "created_at": 1}
+        {"gemini_raw_response": 0}
     ).sort("created_at", -1)
 
     predictions = []
@@ -271,3 +373,100 @@ async def assign_patient_to_provider(
         raise HTTPException(status_code=404, detail="Patient not found")
 
     return {"message": "Patient successfully assigned to your dashboard"}
+
+
+@router.get("/all-assessments")
+async def get_all_assigned_patient_assessments(
+    page: int = 1,
+    limit: int = 10,
+    current_user: dict = Depends(get_current_provider)
+):
+    """
+    Fetch a paginated list of all risk assessments/predictions
+    across all patients assigned to this provider.
+    """
+    db = get_db()
+    provider_uid = current_user["uid"]
+
+    # 1. Get all assigned patient IDs
+    cursor = db.patient_profiles.find(
+        {"assigned_provider_id": provider_uid},
+        {"user_id": 1}
+    )
+    patient_ids = [p["user_id"] async for p in cursor]
+
+    if not patient_ids:
+        return {"assessments": [], "total": 0, "page": page, "limit": limit}
+
+    # 2. Query all predictions matching these IDs, sorted by date descending, paginated
+    skip = (page - 1) * limit
+    
+    pred_cursor = db.predictions.find(
+        {"patient_id": {"$in": patient_ids}},
+        {"gemini_raw_response": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit)
+
+    total_assessments = await db.predictions.count_documents({"patient_id": {"$in": patient_ids}})
+
+    assessments = []
+    async for pred in pred_cursor:
+        pred["id"] = str(pred.pop("_id"))
+        
+        # Get patient name
+        patient_user = await db.users.find_one(
+            {"firebase_uid": pred["patient_id"]},
+            {"full_name": 1, "_id": 0}
+        )
+        pred["patient_name"] = patient_user.get("full_name", "Unknown") if patient_user else "Unknown"
+        
+        # Get gestational week
+        patient_profile = await db.patient_profiles.find_one(
+            {"user_id": pred["patient_id"]},
+            {"gestational_age_weeks": 1, "_id": 0}
+        )
+        pred["gestational_week"] = patient_profile.get("gestational_age_weeks", 0) if patient_profile else 0
+        
+        assessments.append(pred)
+
+    return {
+        "assessments": assessments,
+        "total": total_assessments,
+        "page": page,
+        "limit": limit
+    }
+
+@router.get("/patients/{patient_uid}/reports/{report_id}")
+async def get_patient_report_detail(
+    patient_uid: str,
+    report_id: str,
+    current_user: dict = Depends(get_current_provider)
+):
+    """Get the full text/details of a specific patient report."""
+    db = get_db()
+    provider_uid = current_user["uid"]
+
+    # 1. Verify patient belongs to this provider
+    profile = await db.patient_profiles.find_one({
+        "user_id": patient_uid,
+        "assigned_provider_id": provider_uid
+    })
+    if not profile:
+        raise HTTPException(status_code=403, detail="Not authorized to view this patient")
+
+    try:
+        from bson import ObjectId
+        obj_id = ObjectId(report_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid report ID")
+
+    # 2. Fetch report without excluding extracted_text
+    report = await db.reports.find_one(
+        {"_id": obj_id, "patient_id": patient_uid}
+    )
+
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+    report["id"] = str(report.pop("_id"))
+    return report
+

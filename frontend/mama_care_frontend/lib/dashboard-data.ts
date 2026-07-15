@@ -21,7 +21,8 @@ export interface PatientProfile {
   edd: string;
   daysUntilDue: number;
   conditions: string[];
-  provider: string | null;
+  provider?: string;
+  providerCode?: string;
   preferredLanguage?: string;
 }
 
@@ -235,22 +236,48 @@ export async function getReportHistory(token: string): Promise<ReportEntry[]> {
 /**
  * Fetches the full details of a single report.
  */
-export async function getReportDetail(token: string, id: string): Promise<ReportInterpretation & { filename: string, date: string }> {
-  const res = await fetch(`${API_BASE}/api/v1/reports/${id}`, {
-    headers: { "Authorization": `Bearer ${token}` }
+export async function getReportDetail(token: string, reportId: string): Promise<ReportInterpretation & { filename: string, date: string }> {
+  const res = await fetch(`${API_BASE}/api/v1/reports/${reportId}`, {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
   });
 
   if (!res.ok) {
     throw new Error("Failed to fetch report detail");
   }
 
-  const result = await res.json();
+  const data = await res.json();
   
   return {
-    filename: result.file_name,
-    date: result.created_at,
-    summary: result.simplified_summary || "",
+    filename: data.file_name,
+    date: data.created_at,
+    summary: data.simplified_summary || "",
     abnormalValues: [], 
-    recommendations: result.recommendations || []
+    recommendations: data.recommendations || []
   };
+}
+
+/**
+ * Sends a chat message to the Multilingual Voice Assistant backend.
+ */
+export async function sendChatMessage(token: string, message: string, language: string, sessionId: string) {
+  const res = await fetch(`${API_BASE}/api/v1/assistant/chat`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message,
+      language,
+      session_id: sessionId
+    })
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to send chat message");
+  }
+
+  return res.json();
 }

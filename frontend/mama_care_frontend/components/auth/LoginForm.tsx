@@ -310,7 +310,7 @@ export default function LoginForm() {
         <div style={{ flex: 1, height: "1px", backgroundColor: "#F0D9D9" }} />
       </div>
 
-      <Link href="/auth/register" style={{
+      <Link href="/register" style={{
         display: "block", width: "100%", height: "48px",
         border: "1.5px solid #C0392B", borderRadius: "9999px",
         color: "#C0392B", fontWeight: 600, fontSize: "0.9375rem",

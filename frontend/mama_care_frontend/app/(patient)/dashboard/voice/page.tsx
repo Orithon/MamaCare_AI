@@ -3,6 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Mic, Square, Send, Volume2, Globe } from "lucide-react";
 import VoiceVisualizer from "@/components/dashboard/VoiceVisualizer";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { getDashboardData, sendChatMessage } from "@/lib/dashboard-data";
 
 /**
  * app/(patient)/dashboard/voice/page.tsx
@@ -32,6 +35,10 @@ export default function VoiceAssistantPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [textInput, setTextInput] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [sessionId] = useState<string>(() => {
+    if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
+  });
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -43,9 +50,24 @@ export default function VoiceAssistantPage() {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Clean up audio player on unmount
+  // Clean up audio player on unmount & fetch preferred language
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const token = await user.getIdToken();
+          const data = await getDashboardData(token);
+          if (data?.profile?.preferredLanguage) {
+            setLanguage(data.profile.preferredLanguage);
+          }
+        } catch (e) {
+          console.error("Failed to load preferred language", e);
+        }
+      }
+    });
+
     return () => {
+      unsubscribe();
       if (audioPlayerRef.current) {
         audioPlayerRef.current.pause();
         audioPlayerRef.current.src = "";
@@ -131,14 +153,11 @@ export default function VoiceAssistantPage() {
 
     try {
       // Step B: Chat API
-      const chatRes = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, language }),
-      });
-
-      if (!chatRes.ok) throw new Error("Failed to get AI response");
-      const chatData = await chatRes.json();
+      const user = auth.currentUser;
+      if (!user) throw new Error("Please log in to use the assistant.");
+      const token = await user.getIdToken();
+      
+      const chatData = await sendChatMessage(token, text, language, sessionId);
       const aiText = chatData.response;
 
       // Add AI message to UI

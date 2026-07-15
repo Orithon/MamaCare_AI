@@ -51,6 +51,7 @@ async def get_patient_dashboard(current_user: dict = Depends(get_current_patient
     days_until_due = 0
     conditions = []
     provider_name = None
+    provider_code = None
 
     if profile_doc:
         gestational_week = profile_doc.get("gestational_age_weeks", 0)
@@ -67,12 +68,15 @@ async def get_patient_dashboard(current_user: dict = Depends(get_current_patient
             except ValueError:
                 pass
 
-        # Get provider name if assigned
+        # Get provider name and code if assigned
         provider_id = profile_doc.get("assigned_provider_id")
         if provider_id:
-            provider_doc = await db.users.find_one({"firebase_uid": provider_id})
-            if provider_doc:
-                provider_name = provider_doc.get("full_name")
+            provider_user_doc = await db.users.find_one({"firebase_uid": provider_id})
+            if provider_user_doc:
+                provider_name = provider_user_doc.get("full_name")
+            provider_profile_doc = await db.provider_profiles.find_one({"user_id": provider_id})
+            if provider_profile_doc:
+                provider_code = provider_profile_doc.get("provider_code")
 
     profile_data = {
         "fullName": full_name,
@@ -81,6 +85,7 @@ async def get_patient_dashboard(current_user: dict = Depends(get_current_patient
         "daysUntilDue": days_until_due,
         "conditions": conditions,
         "provider": provider_name,
+        "providerCode": provider_code,
         "preferredLanguage": profile_doc.get("preferred_language", "en") if profile_doc else "en"
     }
 

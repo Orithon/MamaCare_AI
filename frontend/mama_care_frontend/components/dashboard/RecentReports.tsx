@@ -97,16 +97,9 @@ function ReportCard({ report }: { report: ReportEntry }) {
       </div>
 
       {/* Text content */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        {/* Filename + date row */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            justifyContent: "space-between",
-            gap: "0.5rem",
-          }}
-        >
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        {/* Header row: Date and Report Status Pill */}
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "0.5rem" }}>
           <span
             style={{
               fontSize: "0.9375rem",
@@ -160,7 +153,7 @@ function ReportCard({ report }: { report: ReportEntry }) {
  * <RecentReports reports={recentReports} />
  * ```
  */
-export default function RecentReports({ reports }: RecentReportsProps) {
+export default function RecentReports({ reports, hideViewAll = false }: RecentReportsProps) {
   const visible = reports.slice(0, MAX_ENTRIES);
 
   return (
@@ -185,17 +178,19 @@ export default function RecentReports({ reports }: RecentReportsProps) {
           Recent Reports
         </h2>
 
-        <Link
-          href="/dashboard/reports"
-          style={{
-            fontSize: "0.875rem",
-            fontWeight: 600,
-            color: "#C0392B",
-            textDecoration: "none",
-          }}
-        >
-          View All →
-        </Link>
+        {!hideViewAll && (
+          <Link
+            href="/dashboard/reports"
+            style={{
+              fontSize: "0.875rem",
+              fontWeight: 600,
+              color: "#C0392B",
+              textDecoration: "none",
+            }}
+          >
+            View All →
+          </Link>
+        )}
       </div>
 
       {/* ── Content ────────────────────────────────────────────────── */}

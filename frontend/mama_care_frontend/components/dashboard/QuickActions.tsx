@@ -38,13 +38,13 @@ const ACTIONS: ActionItem[] = [
     Icon: Activity,
     label: "New Assessment",
     subtitle: "Check your health",
-    href: "/dashboard/assessment",
+    href: "/dashboard/assessment/new",
   },
   {
     Icon: FileUp,
     label: "Upload Report",
     subtitle: "Get AI explanation",
-    href: "/dashboard/reports",
+    href: "/dashboard/reports/new",
   },
   {
     Icon: Mic,

@@ -48,3 +48,5 @@ class UpdateProfileRequest(BaseModel):
     profile_photo_url: Optional[str] = None
     preferred_language: Optional[Language] = None
     clinic_name: Optional[str] = None
+    provider_code: Optional[str] = None
+    unlink_provider: Optional[bool] = False

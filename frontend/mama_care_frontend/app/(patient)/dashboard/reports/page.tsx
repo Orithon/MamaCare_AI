@@ -74,7 +74,7 @@ export default function ReportsHistoryPage() {
           Loading your history...
         </div>
       ) : (
-        <RecentReports reports={history} />
+        <RecentReports reports={history} hideViewAll={true} />
       )}
     </div>
   );

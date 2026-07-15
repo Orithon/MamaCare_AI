@@ -100,8 +100,8 @@ function ProviderTextColumn() {
       </ul>
 
       {/* CTA */}
-      <Link href="/auth/register?role=provider" id="provider-cta" className="btn-primary">
-        Register as a Provider
+      <Link href="/register?role=provider" id="provider-cta" className="btn-primary">
+        Join as a Provider &rarr;
       </Link>
     </div>
   );

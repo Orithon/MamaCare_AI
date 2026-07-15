@@ -6,6 +6,8 @@ import { getPatientDetails, PatientDetails } from "@/lib/provider-data";
 import PatientProfileCard from "@/components/provider/PatientProfileCard";
 import ClinicalNotes from "@/components/provider/ClinicalNotes";
 import { ArrowLeft, Activity, FileText, AlertCircle, Loader2 } from "lucide-react";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import Link from "next/link";
 import { format } from "date-fns";
 import { RISK_COLOURS } from "@/lib/dashboard-data";
@@ -26,15 +28,24 @@ export default function PatientDetailPage() {
   const currentProviderName = "Nurse Chidinma";
 
   useEffect(() => {
-    const fetchPatient = async () => {
-      setLoading(true);
-      const id = params.id as string;
-      const data = await getPatientDetails(id);
-      setPatient(data);
-      setLoading(false);
-    };
+    const id = params.id as string;
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const token = await user.getIdToken();
+          const data = await getPatientDetails(token, id);
+          setPatient(data);
+        } catch (err) {
+          console.error("Failed to fetch patient details:", err);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        router.push("/login");
+      }
+    });
 
-    fetchPatient();
+    return () => unsubscribe();
   }, [params.id]);
 
   if (loading) {
@@ -118,9 +129,9 @@ export default function PatientDetailPage() {
                             <span 
                               className="px-2 py-0.5 text-xs font-bold rounded-md border uppercase"
                               style={{ 
-                                backgroundColor: RISK_COLOURS[pred.riskLevel].bg, 
-                                color: RISK_COLOURS[pred.riskLevel].text, 
-                                borderColor: RISK_COLOURS[pred.riskLevel].border 
+                                backgroundColor: (RISK_COLOURS[pred.riskLevel as keyof typeof RISK_COLOURS] || RISK_COLOURS["Low"]).bg, 
+                                color: (RISK_COLOURS[pred.riskLevel as keyof typeof RISK_COLOURS] || RISK_COLOURS["Low"]).text, 
+                                borderColor: (RISK_COLOURS[pred.riskLevel as keyof typeof RISK_COLOURS] || RISK_COLOURS["Low"]).border 
                               }}
                             >
                               {pred.riskLevel}
@@ -182,14 +193,18 @@ export default function PatientDetailPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {patient.reports.map(report => (
-                    <div key={report.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-white hover:border-gray-300 transition-colors cursor-pointer">
+                    <Link 
+                      key={report.id} 
+                      href={`/provider/patients/${patient.id}/reports/${report.id}`}
+                      className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-white hover:border-gray-300 transition-colors cursor-pointer block"
+                    >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-semibold text-primary px-2 py-0.5 bg-primary/10 rounded">PDF</span>
                         <span className="text-xs text-gray-500">{format(new Date(report.date), "MMM d, yyyy")}</span>
                       </div>
                       <h3 className="text-sm font-semibold text-gray-900 truncate mb-1" title={report.filename}>{report.filename}</h3>
                       <p className="text-xs text-gray-600 line-clamp-2">{report.summarySnippet}</p>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}

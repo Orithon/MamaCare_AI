@@ -192,6 +192,19 @@ async def update_profile(
     if payload.preferred_language is not None:
         patient_fields["preferred_language"] = payload.preferred_language
 
+    provider_code_invalid = False
+    
+    # Handle unlinking first
+    if payload.unlink_provider:
+        patient_fields["assigned_provider_id"] = None
+    elif payload.provider_code:
+        # User is trying to link a provider
+        provider = await db.provider_profiles.find_one({"provider_code": payload.provider_code.lower()})
+        if provider:
+            patient_fields["assigned_provider_id"] = provider["user_id"]
+        else:
+            provider_code_invalid = True
+
     if patient_fields:
         patient_fields["updated_at"] = now
         await db.patient_profiles.update_one(
@@ -209,5 +222,8 @@ async def update_profile(
             {"user_id": uid},
             {"$set": provider_fields}
         )
+
+    if provider_code_invalid:
+        raise HTTPException(status_code=400, detail="Invalid Provider Code")
 
     return {"message": "Profile updated successfully"}

@@ -1,6 +1,7 @@
 "use client";
 
 import Sidebar from "@/components/dashboard/Sidebar";
+import MobileHeader from "@/components/MobileHeader";
 
 /**
  * Layout for all `/dashboard` routes.
@@ -21,7 +22,7 @@ export default function DashboardLayout({
     <div
       style={{
         display: "flex",
-        minHeight: "100vh",
+        height: "100vh",
         backgroundColor: "#FFF5F5",
       }}
     >
@@ -29,12 +30,15 @@ export default function DashboardLayout({
       <main
         style={{
           flex: 1,
-          padding: "1.5rem",
-          paddingBottom: "5rem",
+          display: "flex",
+          flexDirection: "column",
           overflowY: "auto",
         }}
       >
-        {children}
+        <MobileHeader />
+        <div style={{ padding: "1.5rem", paddingBottom: "5rem", flex: 1 }}>
+          {children}
+        </div>
       </main>
     </div>
   );

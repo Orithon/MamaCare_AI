@@ -97,7 +97,7 @@ function DesktopCTAs({ scrolled }: { scrolled: boolean }) {
   return (
     <div className="navbar-desktop-ctas" style={{ display: "none", gap: "0.75rem", alignItems: "center" }}>
       {/* Ghost "Sign In" link */}
-      <Link href="/auth/login" style={{
+      <Link href="/login" style={{
         color: scrolled ? "#C0392B" : "rgba(255,255,255,0.9)",
         textDecoration: "none", fontSize: "0.9375rem", fontWeight: 600,
         padding: "0.5rem 1rem",
@@ -106,7 +106,7 @@ function DesktopCTAs({ scrolled }: { scrolled: boolean }) {
       </Link>
 
       {/* Solid "Get Started" button */}
-      <Link href="/auth/register" style={{
+      <Link href="/register" style={{
         backgroundColor: scrolled ? "#C0392B" : "white",
         color: scrolled ? "white" : "#C0392B",
         padding: "0.5rem 1.25rem",
@@ -192,10 +192,10 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
       <Link href="#how-it-works" onClick={onClose} style={linkStyle}>How It Works</Link>
 
       {/* Auth links at the bottom of the mobile menu */}
-      <Link href="/auth/login"    onClick={onClose} style={{ ...linkStyle, borderBottom: "none", color: "#C0392B" }}>
+      <Link href="/login"    onClick={onClose} style={{ ...linkStyle, borderBottom: "none", color: "#C0392B" }}>
         Sign In
       </Link>
-      <Link href="/auth/register" onClick={onClose} className="btn-primary" style={{ textAlign: "center", marginTop: "0.5rem" }}>
+      <Link href="/register" onClick={onClose} className="btn-primary" style={{ textAlign: "center", marginTop: "0.5rem" }}>
         Get Started Free
       </Link>
     </div>

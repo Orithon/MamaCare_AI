@@ -108,7 +108,7 @@ export default function ProviderDashboardFilled({ data }: { data: ProviderDashbo
                   <h3 className="font-semibold text-gray-900">{patient.fullName}</h3>
                   <p className="text-sm text-gray-500">Week {patient.gestationalWeek}</p>
                 </div>
-                <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${RISK_STYLES[patient.lastRiskLevel].bg} ${RISK_STYLES[patient.lastRiskLevel].text} ${RISK_STYLES[patient.lastRiskLevel].border}`}>
+                <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${(RISK_STYLES[patient.lastRiskLevel as RiskLevel] || RISK_STYLES["Low"]).bg} ${(RISK_STYLES[patient.lastRiskLevel as RiskLevel] || RISK_STYLES["Low"]).text} ${(RISK_STYLES[patient.lastRiskLevel as RiskLevel] || RISK_STYLES["Low"]).border}`}>
                   {patient.lastRiskLevel}
                 </span>
               </div>
@@ -155,7 +155,7 @@ export default function ProviderDashboardFilled({ data }: { data: ProviderDashbo
                   </td>
                   <td className="px-6 py-4 text-gray-700">Week {patient.gestationalWeek}</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${RISK_STYLES[patient.lastRiskLevel].bg} ${RISK_STYLES[patient.lastRiskLevel].text} ${RISK_STYLES[patient.lastRiskLevel].border}`}>
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${(RISK_STYLES[patient.lastRiskLevel as RiskLevel] || RISK_STYLES["Low"]).bg} ${(RISK_STYLES[patient.lastRiskLevel as RiskLevel] || RISK_STYLES["Low"]).text} ${(RISK_STYLES[patient.lastRiskLevel as RiskLevel] || RISK_STYLES["Low"]).border}`}>
                       {patient.lastRiskLevel === "Critical" && <AlertCircle className="w-3 h-3 mr-1" />}
                       {patient.lastRiskLevel}
                     </span>

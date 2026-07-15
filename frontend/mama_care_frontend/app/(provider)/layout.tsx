@@ -1,6 +1,7 @@
 "use client";
 
 import ProviderSidebar from "@/components/provider/ProviderSidebar";
+import MobileHeader from "@/components/MobileHeader";
 
 export default function ProviderLayout({
   children,
@@ -8,18 +9,19 @@ export default function ProviderLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "#F9FAFB" }}>
+    <div style={{ display: "flex", height: "100vh", backgroundColor: "#F9FAFB" }}>
       <ProviderSidebar />
       <main
         style={{
           flex: 1,
-          padding: "1.5rem",
-          paddingBottom: "5rem", // padding for mobile bottom bar
+          display: "flex",
+          flexDirection: "column",
           overflowY: "auto",
           width: "100%",
         }}
       >
-        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <MobileHeader />
+        <div style={{ padding: "1.5rem", paddingBottom: "5rem", maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
           {children}
         </div>
       </main>

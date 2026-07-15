@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { MOCK_PROVIDER_DATA_EMPTY, MOCK_PROVIDER_DATA_FILLED } from "@/lib/provider-data";
+import { useState, useEffect } from "react";
+import { ProviderDashboardData, getProviderDashboard } from "@/lib/provider-data";
 import ProviderDashboardEmpty from "@/components/provider/ProviderDashboardEmpty";
 import ProviderDashboardFilled from "@/components/provider/ProviderDashboardFilled";
-import { Code2 } from "lucide-react";
+import PaginatedReportsTable from "@/components/provider/PaginatedReportsTable";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 /**
  * app/(provider)/provider/page.tsx
@@ -13,30 +17,59 @@ import { Code2 } from "lucide-react";
  */
 
 export default function ProviderDashboardPage() {
-  const [isEmptyState, setIsEmptyState] = useState(false);
+  const [data, setData] = useState<ProviderDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-  const data = isEmptyState ? MOCK_PROVIDER_DATA_EMPTY : MOCK_PROVIDER_DATA_FILLED;
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const token = await user.getIdToken();
+          const dashboardData = await getProviderDashboard(token);
+          setData(dashboardData);
+        } catch (err) {
+          console.error(err);
+          setError("Failed to load dashboard data.");
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        router.push("/login");
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+        <Loader2 className="w-8 h-8 animate-spin mb-4 text-primary" />
+        <p>Loading your dashboard...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100">
+        {error}
+      </div>
+    );
+  }
+
+  if (!data) return null;
 
   return (
     <div className="pb-24">
-      {/* Dev Toggle Button - Only for demonstration purposes */}
-      <div className="bg-gray-800 text-white p-3 rounded-lg flex items-center justify-between mb-8 shadow-md relative z-20">
-        <div className="flex items-center gap-2">
-          <Code2 className="w-5 h-5 text-gray-400" />
-          <span className="text-sm font-medium">Dev Toggle:</span>
-        </div>
-        <button
-          onClick={() => setIsEmptyState(!isEmptyState)}
-          className="bg-white/10 hover:bg-white/20 px-4 py-1.5 rounded-md text-sm font-medium transition-colors border border-white/20"
-        >
-          Switch to {isEmptyState ? "Filled State" : "Empty State"}
-        </button>
-      </div>
-
-      {isEmptyState ? (
+      {data.patients.length === 0 ? (
         <ProviderDashboardEmpty data={data} />
       ) : (
-        <ProviderDashboardFilled data={data} />
+        <>
+          <ProviderDashboardFilled data={data} />
+          <PaginatedReportsTable />
+        </>
       )}
     </div>
   );

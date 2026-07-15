@@ -74,7 +74,7 @@ export default function AssessmentHistoryPage() {
           Loading your history...
         </div>
       ) : (
-        <RecentPredictions predictions={history} />
+        <RecentPredictions predictions={history} hideViewAll={true} />
       )}
     </div>
   );

@@ -147,7 +147,7 @@ export default function NewAssessmentPage() {
         {isCritical && (
           <div style={{
             backgroundColor: "#DC2626", color: "white", padding: "1.5rem", borderRadius: "1rem",
-            display: "flex", gap: "1rem", alignItems: "flex-start", boxShadow: "0 10px 25px -5px rgba(220, 38, 38, 0.4)"
+            display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "flex-start", boxShadow: "0 10px 25px -5px rgba(220, 38, 38, 0.4)"
           }}>
             <AlertTriangle size={32} style={{ flexShrink: 0 }} />
             <div>
@@ -162,7 +162,7 @@ export default function NewAssessmentPage() {
         {/* Hero Banner */}
         <div style={{
           backgroundColor: colours.bg, border: `1px solid ${colours.border}`,
-          borderRadius: "1rem", padding: "2rem", textAlign: "center"
+          borderRadius: "1rem", padding: "1.5rem", textAlign: "center"
         }}>
           <h2 style={{ fontSize: "2rem", fontWeight: 800, color: colours.text, margin: "0 0 1rem 0", textTransform: "uppercase" }}>
             {result.riskLevel} Risk
@@ -245,7 +245,7 @@ export default function NewAssessmentPage() {
         <section>
           <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "#1A1A1A", margin: "0 0 1rem 0" }}>Vital Signs (Optional)</h2>
           <div style={{
-            display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem",
+            display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "1rem",
             backgroundColor: "#FFFFFF", padding: "1.5rem", borderRadius: "1rem", border: "1px solid #F0D9D9"
           }}>
             <InputField label="Gestational Week" icon={Calendar} value={week} onChange={setWeek} placeholder="e.g. 32" />

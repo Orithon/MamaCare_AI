@@ -276,7 +276,7 @@ export default function RegisterForm({ initialRole = "patient" }: RegisterFormPr
       {/* Link to login */}
       <p style={{ textAlign: "center", fontSize: "0.9rem", color: "#6B7280" }}>
         Already have an account?{" "}
-        <Link href="/auth/login" style={{ color: "#C0392B", fontWeight: 600, textDecoration: "none" }}>
+        <Link href="/login" style={{ color: "#C0392B", fontWeight: 600, textDecoration: "none" }}>
           Sign in →
         </Link>
       </p>
