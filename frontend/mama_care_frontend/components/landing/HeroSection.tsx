@@ -178,24 +178,6 @@ export default function HeroSection() {
         paddingTop: "3rem", paddingBottom: "4rem",
       }}>
 
-        {/* Platform category badge */}
-        <div className="animate-fade-in" style={{
-          display: "inline-flex", alignItems: "center", gap: "0.5rem",
-          backgroundColor: "rgba(255,255,255,0.12)",
-          border: "1px solid rgba(255,255,255,0.2)",
-          borderRadius: "9999px", padding: "0.375rem 1rem",
-          marginBottom: "1.75rem", backdropFilter: "blur(8px)",
-        }}>
-          {/* HeartPulse icon replaces 🤰 emoji */}
-          <HeartPulse size={18} color="rgba(255,255,255,0.9)" aria-hidden="true" />
-          <span style={{
-            color: "rgba(255,255,255,0.92)", fontSize: "0.75rem",
-            fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase",
-          }}>
-            Maternal Health Intelligence Platform
-          </span>
-        </div>
-
         {/* Main headline — clamp() keeps it readable on all screen sizes */}
         <h1 className="animate-fade-in-up delay-100" style={{
           color: "#ffffff",
@@ -203,6 +185,7 @@ export default function HeroSection() {
           fontWeight: 800, lineHeight: 1.1,
           letterSpacing: "-0.03em",
           marginBottom: "1.25rem",
+          paddingTop: "3.25rem"
         }}>
           Your Pregnancy Health{" "}
           <span style={{ display: "block", color: "rgba(255,255,255,0.75)", fontStyle: "italic" }}>

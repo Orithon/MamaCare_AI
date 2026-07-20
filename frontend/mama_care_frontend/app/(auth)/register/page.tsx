@@ -21,7 +21,7 @@ import { UserRole } from "@/lib/placeholder-data";
 
 /* SEO metadata for the register page */
 export const metadata: Metadata = {
-  title: "Create Account — MamaCare AI",
+  title: "Create Account, MamaCare AI",
   description:
     "Register as a pregnant patient or healthcare provider on MamaCare AI. "
     + "Get AI-powered maternal health insights in your language.",

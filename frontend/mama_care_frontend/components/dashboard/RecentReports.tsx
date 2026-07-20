@@ -22,6 +22,7 @@ import { ReportEntry } from "@/lib/dashboard-data";
 interface RecentReportsProps {
   /** Array of uploaded report entries (newest first) */
   reports: ReportEntry[];
+  hideViewAll?: boolean;
 }
 
 /* ── HELPERS ───────────────────────────────────────────────────────────────── */

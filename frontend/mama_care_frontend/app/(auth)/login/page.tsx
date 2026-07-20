@@ -11,7 +11,7 @@ import LoginForm  from "@/components/auth/LoginForm";
 
 /* SEO metadata for the login page */
 export const metadata: Metadata = {
-  title: "Sign In — MamaCare AI",
+  title: "Sign In, MamaCare AI",
   description:
     "Sign in to your MamaCare AI account to view your risk assessments, "
     + "upload reports, and talk to the AI health assistant.",

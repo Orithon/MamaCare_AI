@@ -22,6 +22,7 @@ import { PredictionEntry, RISK_COLOURS } from "@/lib/dashboard-data";
 interface RecentPredictionsProps {
   /** Array of prediction entries (newest first) */
   predictions: PredictionEntry[];
+  hideViewAll?: boolean;
 }
 
 /* ── HELPERS ───────────────────────────────────────────────────────────────── */

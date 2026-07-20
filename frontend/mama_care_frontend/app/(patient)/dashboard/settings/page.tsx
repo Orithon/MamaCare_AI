@@ -26,7 +26,11 @@ export default function SettingsPage() {
         try {
           const token = await user.getIdToken();
           const dashboardData = await getDashboardData(token);
-          setProfile(dashboardData.profile);
+          if (dashboardData) {
+            setProfile(dashboardData.profile);
+          } else {
+            setError("Failed to load profile.");
+          }
         } catch (err) {
           console.error(err);
           setError("Failed to load settings data.");
@@ -78,7 +82,9 @@ export default function SettingsPage() {
       
       // Refresh profile
       const dashboardData = await getDashboardData(token);
-      setProfile(dashboardData.profile);
+      if (dashboardData) {
+        setProfile(dashboardData.profile);
+      }
     } catch (err: any) {
       setLinkError(err.message || "An error occurred.");
     } finally {
@@ -122,7 +128,9 @@ export default function SettingsPage() {
       
       // Refresh profile
       const dashboardData = await getDashboardData(token);
-      setProfile(dashboardData.profile);
+      if (dashboardData) {
+        setProfile(dashboardData.profile);
+      }
     } catch (err: any) {
       setLinkError(err.message || "An error occurred.");
     } finally {

@@ -43,7 +43,7 @@ export default function CTASection() {
           color: "rgba(255,255,255,0.75)", fontSize: "1.125rem",
           maxWidth: "420px", margin: "0 auto 2.5rem", lineHeight: 1.6,
         }}>
-          Join thousands of women getting smarter, safer maternal care —
+          Join thousands of women getting smarter, safer maternal care 
           in their own language.
         </p>
 
@@ -58,7 +58,7 @@ export default function CTASection() {
             fontWeight: 700, fontSize: "1rem", textDecoration: "none",
             boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
           }}>
-            Register Now — It&apos;s Free
+            Register Now
           </Link>
 
           {/* Secondary CTA — sign in */}

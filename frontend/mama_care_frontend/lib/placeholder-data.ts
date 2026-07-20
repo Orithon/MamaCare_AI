@@ -34,7 +34,7 @@ export interface MockPatient {
 
 export async function getPlatformStats(): Promise<PlatformStats> {
   return {
-    maternalDeathStat: "~20%",
+    maternalDeathStat: "~30%",
     maternalDeathLabel: "of global maternal deaths occur in Nigeria",
     languagesCount: "4",
     languagesLabel: "Nigerian languages supported (EN, YO, IG, HA)",

@@ -72,7 +72,7 @@ function ProviderTextColumn() {
         lineHeight: 1.7, marginBottom: "1.75rem",
       }}>
         Midwives and doctors get a dedicated command centre to manage patient
-        risk remotely — without needing to see every patient in person every day.
+        risk remotely without needing to see every patient in person every day.
       </p>
 
       {/* Benefits list */}

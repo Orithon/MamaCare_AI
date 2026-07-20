@@ -63,7 +63,7 @@ const FEATURES: Feature[] = [
     icon: <WaveformIcon />,
     title: "Risk Prediction Engine",
     description:
-      "Submit your blood pressure, glucose, temperature and symptoms. Our AI predicts your maternal risk level — Low, Moderate, High, or Critical — in under 10 seconds.",
+      "Submit your blood pressure, glucose, temperature and symptoms. Our AI predicts your maternal risk level e.g Low, Moderate, High, or Critical in under 10 seconds.",
     highlight: "Preeclampsia · Gestational Diabetes · Anaemia",
   },
   {
@@ -79,7 +79,7 @@ const FEATURES: Feature[] = [
     icon: <MicIcon />,
     title: "Multilingual Voice Assistant",
     description:
-      "Ask any pregnancy health question by voice — in Yoruba, Igbo, Hausa, or English — and hear the answer spoken back to you in your own language.",
+      "Ask any pregnancy health question by voice in Yoruba, Igbo, Hausa, or English and hear the answer spoken back to you in your own language.",
     highlight: "English · Yoruba · Igbo · Hausa",
   },
 ];

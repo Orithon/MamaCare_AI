@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "MamaCare AI — Your Pregnancy Health Companion",
+  title: "MamaCare AI",
   description:
     "AI-powered maternal health platform for pregnant women in Nigeria. Get personalised risk assessments, understand your medical reports, and ask health questions in Yoruba, Igbo, or Hausa.",
   keywords: [
@@ -22,9 +22,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Indubitable Team" }],
   openGraph: {
-    title: "MamaCare AI — Your Pregnancy Health Companion",
+    title: "MamaCare AI",
     description:
-      "AI-powered maternal care for every woman in Nigeria — in your language, at your fingertips.",
+      "AI-powered maternal care for every woman in Nigeria, in your language, at your fingertips.",
     type: "website",
   },
 };
