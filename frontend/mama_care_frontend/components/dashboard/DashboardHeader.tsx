@@ -65,7 +65,7 @@ export default function DashboardHeader({
             lineHeight: 1.3,
           }}
         >
-          Hello, {fullName} 👋
+          Hello, {fullName} 
         </h1>
 
         <p

@@ -217,7 +217,7 @@ export default function HeroSection() {
           maxWidth: "580px", margin: "0 auto 2.25rem",
           lineHeight: 1.7,
         }}>
-          AI-powered maternal care for every woman in Nigeria — regardless of
+          AI-powered maternal care for every woman in Nigeria regardless of
           language, location, or literacy level.
         </p>
 
@@ -232,7 +232,7 @@ export default function HeroSection() {
             boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
             transition: "transform 0.2s ease, box-shadow 0.2s ease",
           }}>
-            Get Started — It&apos;s Free <ArrowIcon />
+            Get Started<ArrowIcon />
           </Link>
           <Link href="/register?role=provider" id="hero-provider" style={{
             display: "inline-flex", alignItems: "center",
