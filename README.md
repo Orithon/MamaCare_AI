@@ -72,13 +72,14 @@ MamaCare-AI/
 1. Clone the repository.
 
 ```bash
-git clone https://github.com/your-username/MamaCare-AI.git
-cd MamaCare-AI
+git clone https://github.com/DATICANcompetitionUI/MamaCare.git
+cd MamaCare
 ```
 
 2. Create and activate a virtual environment.
 
 ```bash
+cd backend
 python -m venv venv
 ```
 
@@ -88,12 +89,19 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-4. Start the development server.
+4. Start the backend server.
 
 ```bash
-python app.py
+uvicorn main:app --reload --port:8000
 ```
 
+5. Start the frontend server.
+
+ ``` bash
+  cd frontend
+  pnpm dev
+```
+   
 
 
 ---
@@ -105,6 +113,9 @@ python app.py
 * Mobile application.
 * Appointment scheduling with healthcare providers.
 * Real-time notifications and reminders.
+* Add GPU for custom text to speech model.
+* Automatic connection of high risk patients to available providers
+* Hospital integration
 
 ---
 
